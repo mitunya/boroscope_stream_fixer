@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+  Changed by mit.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +49,7 @@ SOFTWARE.
 
 char frame_start_tag[9] = {'B', 'o', 'u', 'n', 'd', 'a', 'r', 'y', 'S'};
 char frame_end_tag[9] = {'B', 'o', 'u', 'n', 'd', 'a', 'r', 'y', 'E'};
+char dummy[256];
 
 // Frame header is little endian. So this should just work on Intel machines.
 // Only know what some of these fields are, but really only size matters.
@@ -260,6 +264,7 @@ int main(int argc, char **argv)
     struct frame_header header;
     char *buf;
     size_t buf_size;
+    size_t ret_size;
 
     buf_size = 16384; // This should be good for most frames.
     buf = malloc(buf_size);
@@ -280,7 +285,8 @@ int main(int argc, char **argv)
             log_frames = 1;
             break;
         case 'h':
-            fprintf(stderr, "Usage: [-l] [-i file|tcp:addr:port] [-o file|tcp:addr:port]\n");
+            fprintf(stderr, "Usage: [-l] [-i file|tcp:addr:port] [-o -|file|tcp:addr:port]\n");
+            fprintf(stderr, "       -o - : stdout");
             return 1;
             break;
         }
@@ -300,7 +306,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (out_str == NULL)
+    if (out_str == NULL || strstr(out_str, "-") != NULL)
     {
         out.fd = stdout;
     }
@@ -327,10 +333,7 @@ int main(int argc, char **argv)
 
                 // Read in frame header.
 
-                for (i = 0; i < sizeof(struct frame_header); i++)
-                {
-                    ((char *)&header)[i] = getc(in.fd);
-                }
+                ret_size = fread(&header, sizeof(struct frame_header), 1, in.fd) ;
 
                 if (log_frames)
                 {
@@ -359,10 +362,8 @@ int main(int argc, char **argv)
                     debug_print("Reallocated buffer: size = %ld\n", buf_size);
                 }
 
-                for (i = 0; i < header.size; i++)
-                {
-                    buf[i] = getc(in.fd);
-                };
+                ret_size = fread(buf, header.size, 1, in.fd);
+
 
                 // "Unencrypt" frame.
 
@@ -370,17 +371,11 @@ int main(int argc, char **argv)
 
                 // Dump unencrypted mjpeg frame sans header/footer.
 
-                for (i = 0; i < header.size; i++)
-                {
-                    putc(buf[i], out.fd);
-                };
+                ret_size = fwrite(buf, header.size, 1, out.fd) ;
 
                 // Read in end tag;
 
-                for (i = 0; i < sizeof(frame_start_tag); i++)
-                {
-                    getc(in.fd);
-                };
+                ret_size = fread(dummy, sizeof(frame_end_tag), 1, in.fd) ;
             }
         }
         else
