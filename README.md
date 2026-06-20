@@ -58,21 +58,21 @@ The `-l` flag can be provided to log basic information for processed frames to s
 Take network stream from camera and rebroadcast a fixed stream:
 
 ```
-$ ./bfs -i tcp:192.168.10.123:7060 -o tcp::7060
+$ ./bsf -i tcp:192.168.10.123:7060 -o tcp::7060
 ```
 
 Take network stream from camera and dump a fixed stream to disk:
 
 ```
-$ ./bfs -i tcp:192.168.10.123:7060 -o stream.mjpeg
+$ ./bsf -i tcp:192.168.10.123:7060 -o stream.mjpeg
 ```
 
 Take a saved stream on disk and pipe to an external media player:
 
 ```
-$ ./bfs -i stream.mjpeg | ffplayer -f mjpeg -
+$ ./bsf -i stream.mjpeg | ffplayer -f mjpeg -
 same as
-$ ./bfs -i stream.mjpeg -o - | ffplayer -f mjpeg -
+$ ./bsf -i stream.mjpeg -o - | ffplayer -f mjpeg -
 ```
 
 # Known Issues
