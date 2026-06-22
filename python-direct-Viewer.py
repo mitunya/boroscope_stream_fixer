@@ -1,6 +1,17 @@
-frame_start = bytearray(b'BoundaryS') # [ b'B', b'o', b'u', b'n', b'd', b'a', b'r', b'y', b'S' ]
-frame_end = [ b'B', b'o', b'u', b'n', b'd', b'a', b'r', b'y', b'E' ]
-frame_start_len = len(frame_start)
+def hex_dump(data, length=16):
+    """ Dump Hex decimal """
+    for i in range(0, len(data), length):
+        chunk = data[i:i+length]
+        hex_part = ' '.join(f'{byte:02x}' for byte in chunk)
+        ascii_part = ''.join(chr(byte) if 32 <= byte < 127 else '.' for byte in chunk)
+        print(f'{i:04x}  {hex_part:<{length*3}}  {ascii_part}')
+
+
+frame_boundary_start = bytearray(b'BoundaryS') # [ b'B', b'o', b'u', b'n', b'd', b'a', b'r', b'y', b'S' ]
+frame_boundary_start_len = len(frame_boundary_start)
+frame_boundary_end = bytearray(b'BoundaryE') # [ b'B', b'o', b'u', b'n', b'd', b'a', b'r', b'y', b'E' ]
+frame_boundary_end_len = len(frame_boundary_end)
+dummy = bytearray(frame_boundary_start_len)
 
 """
 struct __attribute__((__packed__)) frame_header
@@ -31,7 +42,6 @@ import cv2
 
 frame_header_fmt = '<bbbbIIIIHHII'
 frame_header_length = struct.calcsize(frame_header_fmt)
-print(frame_header_length)
 buf_frame_header = bytearray(frame_header_length)
 
 key_quit = [ord('q'), ord('Q'), ord(b'\x1b')]
@@ -45,18 +55,18 @@ sock.connect((host, port))
 image_buffer = bytearray(256 * 1024)
 
 matching_index = 0
+drop = 0
+
 while True:
     ch = sock.recv(1)
-    if ord(ch) == frame_start[matching_index]:
+    if ord(ch) == frame_boundary_start[matching_index]:
         matching_index += 1
 
-        if matching_index == frame_start_len:
+        if matching_index == frame_boundary_start_len:
             buf_frame_header = bytearray(sock.recv(frame_header_length))
             frame_header = struct.unpack(frame_header_fmt, buf_frame_header)
-
             frame_size = frame_header[4]
 
-            #image_buffer = bytearray(frame_size)
             sock.recv_into(image_buffer, frame_size)
 
             image_buffer[math.floor(frame_size / 2)] = image_buffer[math.floor(frame_size / 2)] ^ 0xff
@@ -68,12 +78,12 @@ while True:
                 if k in key_quit:
                     break
             except Exception as e:
-                print('drop')
+                drop += 1
+                print(datetime.datetime.now(), "frame drop:", drop)
                 pass
 
-            print(datetime.datetime.now())
-            sock.recv_into(buf_frame_header, len(frame_end))
-
+            # print(datetime.datetime.now())
+            sock.recv_into(buf_frame_header, frame_boundary_end_len)
             matching_index = 0
     else:
         matching_index = 0
