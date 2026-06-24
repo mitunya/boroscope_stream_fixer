@@ -1,3 +1,9 @@
+'''
+https://dev.to/linou518/when-macos-26-tahoe-blocked-python-socket-connections-and-how-launchdaemon-fixed-it-3j2i
+
+need sudo
+'''
+
 def hex_dump(data, length=16):
     """ Dump Hex decimal """
     for i in range(0, len(data), length):
