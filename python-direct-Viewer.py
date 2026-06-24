@@ -77,6 +77,7 @@ while True:
                 k = cv2.waitKey(int(1000/15)) & 0xff
                 if k in key_quit:
                     break
+                drop = 0
             except Exception as e:
                 drop += 1
                 print(datetime.datetime.now(), "frame drop:", drop)
