@@ -1,6 +1,8 @@
 '''
 https://dev.to/linou518/when-macos-26-tahoe-blocked-python-socket-connections-and-how-launchdaemon-fixed-it-3j2i
 
+https://mkarr.github.io/20200616_boroscope
+
 need sudo
 '''
 

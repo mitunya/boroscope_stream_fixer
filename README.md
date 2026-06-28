@@ -70,9 +70,9 @@ $ ./bsf -i tcp:192.168.10.123:7060 -o stream.mjpeg
 Take a saved stream on disk and pipe to an external media player:
 
 ```
-$ ./bsf -i stream.mjpeg | ffplayer -f mjpeg -
+$ ./bsf -i stream.mjpeg | ffplay -f mjpeg -
 same as
-$ ./bsf -i stream.mjpeg -o - | ffplayer -f mjpeg -
+$ ./bsf -i stream.mjpeg -o - | ffplay -f mjpeg -
 ```
 
 # Known Issues
